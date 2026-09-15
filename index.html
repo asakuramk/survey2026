@@ -3,310 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>北島病院 システム現状調査フォーム</title>
+    <title>北島病院 システム現状調査ダッシュボード</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .hidden-section { display: none; }
-        .active-section { display: block; }
-    </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen font-sans">
+<body class="bg-slate-50 text-slate-800 min-h-screen font-sans">
 
-    <!-- Auth Overlay -->
-    <div id="auth-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex items-center justify-center p-4">
-        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full text-center">
-            <h1 class="text-2xl font-bold mb-6 text-gray-900">システム調査アクセス認証</h1>
-            <p class="text-gray-600 mb-6 text-sm">認証パスワードを入力してください</p>
-            <input type="password" id="auth-password" class="w-full p-3 border rounded-lg mb-4 text-center text-lg" placeholder="Password">
-            <button onclick="checkAuth()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">認証</button>
-            <p id="auth-error" class="text-red-500 mt-4 hidden">パスワードが正しくありません</p>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div id="main-content" class="hidden">
-        <!-- Header -->
-        <header class="bg-white border-b sticky top-0 z-10">
-            <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-                <div>
-                    <h1 class="text-xl font-bold text-blue-800">北島病院 システム現状調査</h1>
-                    <p class="text-xs text-gray-500">※患者情報・個人情報の入力は厳禁です</p>
-                </div>
-                <button onclick="exportData()" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition">回答データを保存して完了</button>
+    <!-- Header -->
+    <header class="bg-white border-b sticky top-0 z-10 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-blue-900">北島病院 システム現状調査ポータル</h1>
+                <p class="text-sm text-slate-500 mt-1">各部署の担当者が情報を集約し、一つのマスターテーブルを完成させます</p>
             </div>
-        </header>
-
-        <div class="max-w-7xl mx-auto px-4 py-8 flex gap-8">
-            <!-- Sidebar Navigation -->
-            <nav class="w-64 shrink-0 hidden md:block">
-                <ul class="space-y-1 sticky top-24">
-                    <li><button onclick="showSection('basic')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium text-gray-700" data-section="basic">基本情報</button></li>
-                    <li><button onclick="showSection('pacs')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium text-gray-700" data-section="pacs">PACS・画像診断</button></li>
-                    <li><button onclick="showSection('emr')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium text-gray-700" data-section="emr">電子カルテ</button></li>
-                    <li><button onclick="showSection('devices')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium text-gray-700" data-section="devices">各種検査機器</button></li>
-                    <li><button onclick="showSection('dialysis')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium text-gray-700" data-section="dialysis">透析システム</button></li>
-                    <li><button onclick="showSection('infra')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium text-gray-700" data-section="infra">サーバー・ネットワーク</button></li>
-                    <li><button onclick="showSection('ops')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium text-gray-700" data-section="ops">運用・保守・BCP</button></li>
-                    <li><button onclick="showSection('roken')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium text-gray-700" data-section="roken">老健連携</button></li>
-                    <li><button onclick="showSection('ai')" class="nav-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium text-gray-700" data-section="ai">AI・API連携要望</button></li>
-                </ul>
-            </nav>
-
-            <!-- Form Content -->
-            <main class="flex-1 bg-white p-8 rounded-xl shadow-sm border">
-                <form id="survey-form">
-                    
-                    <!-- Section: Basic -->
-                    <section id="section-basic" class="form-section active-section">
-                        <h2 class="text-2xl font-bold mb-6 text-gray-900 border-b pb-2">基本情報</h2>
-                        <div class="grid grid-cols-1 gap-6">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">部署名</label>
-                                <input type="text" name="dept_name" class="w-full p-2 border rounded-md" required placeholder="例：放射線科、医事課">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">回答者名</label>
-                                <input type="text" name="respondent" class="w-full p-2 border rounded-md" placeholder="例：北島 太郎">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">調査日</label>
-                                <input type="date" name="survey_date" class="w-full p-2 border rounded-md">
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Section: PACS -->
-                    <section id="section-pacs" class="form-section hidden-section">
-                        <h2 class="text-2xl font-bold mb-6 text-gray-900 border-b pb-2">PACS・画像診断</h2>
-                        <div class="space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">PACSベンダー/製品名</label>
-                                    <input type="text" name="pacs_vendor" class="w-full p-2 border rounded-md">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">ビューアー製品 (FUJI系か？)</label>
-                                    <input type="text" name="pacs_viewer" class="w-full p-2 border rounded-md" placeholder="例：Synapse">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">現状の不満点・トラブル事例</label>
-                                <textarea name="pacs_issues" rows="4" class="w-full p-2 border rounded-md" placeholder="例：起動が遅い、操作が複雑、連携エラーが出るなど"></textarea>
-                            </div>
-                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                                <p class="text-sm text-blue-800 font-medium mb-2">【必須確認】現在のビューアーの操作感を維持したいか？</p>
-                                <div class="flex gap-4">
-                                    <label class="flex items-center gap-2"><input type="radio" name="pacs_keep_ui" value="yes"> 絶対に維持したい</label>
-                                    <label class="flex items-center gap-2"><input type="radio" name="pacs_keep_ui" value="maybe"> 改善されるなら変えても良い</label>
-                                    <label class="flex items-center gap-2"><input type="radio" name="pacs_keep_ui" value="no"> 特にこだわりはない</label>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Section: EMR -->
-                    <section id="section-emr" class="form-section hidden-section">
-                        <h2 class="text-2xl font-bold mb-6 text-gray-900 border-b pb-2">電子カルテ</h2>
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">現在の電子カルテ製品</label>
-                                <input type="text" name="emr_current" class="w-full p-2 border rounded-md" placeholder="例：富士通">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">乗り換え検討製品 (あれば)</label>
-                                <input type="text" name="emr_next" class="w-full p-2 border rounded-md">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">カルテ入力における最大の課題</label>
-                                <textarea name="emr_issues" rows="4" class="w-full p-2 border rounded-md" placeholder="例：入力項目が多すぎる、サマリー作成に時間がかかる"></textarea>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Section: Devices -->
-                    <section id="section-devices" class="form-section hidden-section">
-                        <h2 class="text-2xl font-bold mb-6 text-gray-900 border-b pb-2">各種検査機器</h2>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-left border">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="p-2 border">機器</th>
-                                        <th class="p-2 border">メーカー/モデル</th>
-                                        <th class="p-2 border">導入年</th>
-                                        <th class="p-2 border">接続状態 (DICOM/API等)</th>
-                                        <th class="p-2 border">備考/不満点</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="p-2 border font-medium">CT</td>
-                                        <td class="p-2 border"><input type="text" name="dev_ct_model" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_ct_year" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_ct_conn" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_ct_note" class="w-full p-1 border rounded"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="p-2 border font-medium">MRI</td>
-                                        <td class="p-2 border"><input type="text" name="dev_mri_model" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_mri_year" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_mri_conn" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_mri_note" class="w-full p-1 border rounded"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="p-2 border font-medium">US(一般)</td>
-                                        <td class="p-2 border"><input type="text" name="dev_us_model" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_us_year" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_us_conn" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_us_note" class="w-full p-1 border rounded"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="p-2 border font-medium">乳腺エコー</td>
-                                        <td class="p-2 border"><input type="text" name="dev_breast_model" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_breast_year" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_breast_conn" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_breast_note" class="w-full p-1 border rounded"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="p-2 border font-medium">ECG/ABI</td>
-                                        <td class="p-2 border"><input type="text" name="dev_ecg_model" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_ecg_year" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_ecg_conn" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_ecg_note" class="w-full p-1 border rounded"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="p-2 border font-medium">眼科機器</td>
-                                        <td class="p-2 border"><input type="text" name="dev_eye_model" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_eye_year" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_eye_conn" class="w-full p-1 border rounded"></td>
-                                        <td class="p-2 border"><input type="text" name="dev_eye_note" class="w-full p-1 border rounded"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
-
-                    <!-- Section: Dialysis -->
-                    <section id="section-dialysis" class="form-section hidden-section">
-                        <h2 class="text-2xl font-bold mb-6 text-gray-900 border-b pb-2">透析システム</h2>
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">透析管理システム製品名</label>
-                                <input type="text" name="dialysis_system" class="w-full p-2 border rounded-md">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">電子カルテとの連携状況</label>
-                                <select name="dialysis_emr_link" class="w-full p-2 border rounded-md">
-                                    <option value="none">連携していない (手入力)</option>
-                                    <option value="partial">一部連携している</option>
-                                    <option value="full">フル連携している</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">運用の課題</label>
-                                <textarea name="dialysis_issues" rows="4" class="w-full p-2 border rounded-md"></textarea>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Section: Infra -->
-                    <section id="section-infra" class="form-section hidden-section">
-                        <h2 class="text-2xl font-bold mb-6 text-gray-900 border-b pb-2">サーバー・ネットワーク</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">サーバー構成 (物理/仮想化)</label>
-                                <input type="text" name="infra_server" class="w-full p-2 border rounded-md" placeholder="例：VMware / 物理サーバー 3台">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">OS・バージョン</label>
-                                <input type="text" name="infra_os" class="w-full p-2 border rounded-md" placeholder="例：Windows Server 2016">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">ネットワーク構成 (VLAN等の有無)</label>
-                                <input type="text" name="infra_net" class="w-full p-2 border rounded-md" placeholder="例：VLANで医療機器・事務系を分離">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">インターネット回線 (プロバイダ/冗長性)</label>
-                                <input type="text" name="infra_isp" class="w-full p-2 border rounded-md" placeholder="例：NTT/フレッツ 光コラボ (冗長なし)">
-                            </div>
-                        </div>
-                        <div class="mt-6">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">バックアップ方式</label>
-                            <textarea name="infra_backup" rows="3" class="w-full p-2 border rounded-md" placeholder="例：外付けHDDに日次バックアップ、クラウド保管なし"></textarea>
-                        </div>
-                    </section>
-
-                    <!-- Section: Ops -->
-                    <section id="section-ops" class="form-section hidden-section">
-                        <h2 class="text-2xl font-bold mb-6 text-gray-900 border-b pb-2">運用・保守・BCP</h2>
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">トラブル発生時の連絡フロー</label>
-                                <textarea name="ops_flow" rows="3" class="w-full p-2 border rounded-md" placeholder="例：担当者に電話 → ベンダーに連絡"></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">保守契約の管理状況 (誰が把握しているか)</label>
-                                <input type="text" name="ops_contract" class="w-full p-2 border rounded-md" placeholder="例：事務長のみ把握">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">障害発生時の暫定運用 (紙カルテへの切り替え等)</label>
-                                <textarea name="ops_bcp" rows="3" class="w-full p-2 border rounded-md"></textarea>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Section: Roken -->
-                    <section id="section-roken" class="form-section hidden-section">
-                        <h2 class="text-2xl font-bold mb-6 text-gray-900 border-b pb-2">老健連携</h2>
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">老健とのデータ連携方法</label>
-                                <input type="text" name="roken_link" class="w-full p-2 border rounded-md" placeholder="例：USBメモリでコピー、共有フォルダ">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">連携における課題</label>
-                                <textarea name="roken_issues" rows="3" class="w-full p-2 border rounded-md"></textarea>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Section: AI -->
-                    <section id="section-ai" class="form-section hidden-section">
-                        <h2 class="text-2xl font-bold mb-6 text-gray-900 border-b pb-2">AI・API連携要望</h2>
-                        <div class="space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">音声入力の導入希望</label>
-                                    <select name="ai_voice" class="w-full p-2 border rounded-md">
-                                        <option value="high">非常に強く希望する</option>
-                                        <option value="medium">あれば便利だと思う</option>
-                                        <option value="low">特に必要ない</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">AIサマリー機能の要望</label>
-                                    <select name="ai_summary" class="w-full p-2 border rounded-md">
-                                        <option value="high">非常に強く希望する</option>
-                                        <option value="medium">あれば便利だと思う</option>
-                                        <option value="low">特に必要ない</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">レセプトAIチェック・API書き戻しについて</label>
-                                <textarea name="ai_receipt" rows="4" class="w-full p-2 border rounded-md" placeholder="例：チェック漏れを自動検知してカルテに書き戻してほしい"></textarea>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">その他、IT化してほしい要望</label>
-                                <textarea name="ai_other" rows="4" class="w-full p-2 border rounded-md"></textarea>
-                            </div>
-                        </div>
-                    </section>
-
-                </form>
-            </main>
+            <a href="YOUR_GOOGLE_SHEET_URL_HERE" target="_blank" class="bg-blue-600 text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-blue-700 transition shadow-lg flex items-center gap-2">
+                <span>📝 共有マスターテーブルを開く</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                    <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                </svg>
+            </a>
         </div>
-    </div>
+    </header>
 
-    <script src="script.js"></script>
+    <main class="max-w-7xl mx-auto px-4 py-10">
+        
+        <!-- Alert -->
+        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-10 rounded-r-lg shadow-sm">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099a.75.75 0 00-1.243.426l-3.75 6.25a.75.75 0 001.243.426l2.5 0a.75.75 0 00.75-.75V3.099zm11.314 0a.75.75 0 00-1.243.426l-3.75 6.25a.75.75 0 001.243.426l2.5 0a.75.75 0 00.75-.75V3.099zM16.5 13.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-amber-800 font-medium">
+                        【重要】共有テーブルへの入力時、患者名・IDなどの個人情報は絶対に入力しないでください。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Responsibility Map -->
+            <div class="lg:col-span-2">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    調査項目と担当分担 (責任マップ)
+                </h2>
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-100 border-b">
+                            <tr>
+                                <th class="px-4 py-3 font-bold text-slate-700">調査カテゴリー</th>
+                                <th class="px-4 py-3 font-bold text-slate-700">担当部署</th>
+                                <th class="px-4 py-3 font-bold text-slate-700">主担当者</th>
+                                <th class="px-4 py-3 font-bold text-slate-700">状況</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            <tr>
+                                <td class="px-4 py-3 font-medium">PACS / 画像診断</td>
+                                <td class="px-4 py-3">放射線科</td>
+                                <td class="px-4 py-3">（要指定）</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 text-xs rounded-full bg-slate-200 text-slate-600">未着手</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium">電子カルテ</td>
+                                <td class="px-4 py-3">医事課 / 事務局</td>
+                                <td class="px-4 py-3">（要指定）</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 text-xs rounded-full bg-slate-200 text-slate-600">未着手</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium">CT / MRI / US</td>
+                                <td class="px-4 py-3">放射線科</td>
+                                <td class="px-4 py-3">（要指定）</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 text-xs rounded-full bg-slate-200 text-slate-600">未着手</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium">透析システム</td>
+                                <td class="px-4 py-3">透析センター</td>
+                                <td class="px-4 py-3">（要指定）</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 text-xs rounded-full bg-slate-200 text-slate-600">未着手</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium">インフラ (サーバー/NW)</td>
+                                <td class="px-4 py-3">事務局 / システム担当</td>
+                                <td class="px-4 py-3">（要指定）</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 text-xs rounded-full bg-slate-200 text-slate-600">未着手</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium">老健連携 / その他</td>
+                                <td class="px-4 py-3">老健担当 / 事務局</td>
+                                <td class="px-4 py-3">（要指定）</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 text-xs rounded-full bg-slate-200 text-slate-600">未着手</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Guide -->
+            <div class="space-y-6">
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    入力ガイド
+                </h2>
+                <div class="bg-white p-6 rounded-xl shadow-sm border space-y-4">
+                    <div class="flex gap-3">
+                        <div class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center shrink-0 font-bold text-xs">1</div>
+                        <p class="text-sm">右上のボタンから「共有マスターテーブル」を開きます</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center shrink-0 font-bold text-xs">2</div>
+                        <p class="text-sm">自分の担当項目（行）を探し、現状を記入してください</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center shrink-0 font-bold text-xs">3</div>
+                        <p class="text-sm">入力が完了したら、右端の「完了チェック」にチェックを入れてください</p>
+                    </div>
+                    <div class="mt-6 pt-6 border-t text-xs text-slate-500 leading-relaxed">
+                        ※ Googleアカウントへのログインが必要です。<br>
+                        ※ 編集内容はリアルタイムで保存され、全員に共有されます。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
 </body>
 </html>
